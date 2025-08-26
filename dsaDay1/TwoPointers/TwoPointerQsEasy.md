@@ -23,7 +23,7 @@ Used when comparing elements from **both ends**.
 * Reverse Prefix of Word >>
 * Lexicographically Smallest Palindrome >>
 * Minimum Average of Smallest and Largest Elements  >>
-
+* Find the Array Concatenation Value>>
 ---
 
 ### 2️⃣ Same Direction Pointers (Index Scan / Linear Walk)
@@ -39,8 +39,7 @@ Both pointers move **forward**, often with filtering / skipping logic.
 * Find First Palindromic String in the Array>>
 * Find All K-Distant Indices in an Array>>
 * Apply Operations to an Array>>
-* Find the Array Concatenation Value
-* Find Indices With Index and Value Difference I
+* Find Indices With Index and Value Difference I>>
 
 🚨 **Correction:**
 
@@ -63,12 +62,12 @@ One pointer moves faster (used in cycle detection, middle finding).
 
 Use 2–3+ pointers to partition into regions.
 
-* 26. Remove Duplicates from Sorted Array
+* 26. Remove Duplicates from Sorted Array>>
 * Merge Sorted Array (❌ actually **Merging** → move it)
-* Move Zeroes (already listed above, Same Direction)
+* Move Zeroes (already listed above, Same Direction)>>
 * Sort Array By Parity
 * Sort Array By Parity II
-* Duplicate Zeros
+* Duplicate Zeros>>
 
 ---
 
@@ -77,9 +76,9 @@ Use 2–3+ pointers to partition into regions.
 Classic **merge two sorted sequences** or traverse in parallel.
 
 * 88. Merge Sorted Array
-* Intersection of Two Arrays
-* Intersection of Two Arrays II
-* Assign Cookies
+* Intersection of Two Arrays>>
+* Intersection of Two Arrays II>>
+* Assign Cookies>>
 * Minimum Common Value
 * Merge Two 2D Arrays by Summing Values
 * ✅ Backspace String Compare (fits here better than Same Direction)
@@ -88,11 +87,11 @@ Classic **merge two sorted sequences** or traverse in parallel.
 
 ### 6️⃣ String Specific Variants (Two-Pointer but string-oriented tricks)
 
-* Find the Index of the First Occurrence in a String
-* Reverse String II
+* Find the Index of the First Occurrence in a String>>
+* Reverse String II>>
 * Reverse Words in a String III
 * DI String Match
-* Check If a Word Occurs As a Prefix of Any Word in a Sentence
+* Check If a Word Occurs As a Prefix of Any Word in a Sentence>>
 * Merge Strings Alternately
 
 ---
@@ -111,14 +110,14 @@ Classic **merge two sorted sequences** or traverse in parallel.
 
 ### 8️⃣ Miscellaneous (Don’t fit neatly, but still pointer-style)
 
-* Count Binary Substrings (group counting → windowing)
-* Shortest Distance to a Character (two passes)
-* Flipping an Image (row-wise 2-pointer reverse)
+* Count Binary Substrings (group counting → windowing)>>
+* Shortest Distance to a Character (two passes)>>
+* Flipping an Image (row-wise 2-pointer reverse)>>
 * Remove Palindromic Subsequences (palindrome check inside)
 * Faulty Sensor
 * Maximum Enemy Forts That Can Be Captured
 * Count the Number of Incremovable Subarrays I
-* Earliest Finish Time for Land and Water Rides I
+* Earliest Finish Time for Land and Water Rides I>>
 * Flip Square Submatrix Vertically
 
 ---
