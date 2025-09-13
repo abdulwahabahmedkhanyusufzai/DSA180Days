@@ -1,0 +1,62 @@
+ [1,2,3,4]
+  i j
+Ans obtained as follows: [1, 1+2, 1+2+3, 1+2+3+4].
+
+[0] = [0]
+[1] = [0]+[1]
+[2] = [0]+[1]+[2]
+[3] = [0]+[1]+[2]+[3]
+
+[1,1,1,1,1]
+Output: [1,2,3,4,5]
+Explanation: Running sum is obtained as follows: [1, 1+1, 1+1+1, 1+1+1+1, 1+1+1+1+1].
+
+[0] = [0]
+[1] = [0]+[1]
+[2] = [0]+[1]+[2]
+[3] = [0]+[1]+[2]+[3]
+[4] = [0]+[1]+[2]+[3]+[4]
+
+we can run for loop from 1st element to last number of an array
+we can run nested loop j = form 0 to i 
+
+
+class Solution {
+public:
+    vector<int> runningSum(vector<int>& nums) {
+        int n = nums.size();
+        vector<int> result(n);
+        for(int i=0;i<n;i++){
+        int sum=0;
+        for(int j=0;j<=i;j++){
+          sum+=nums[j];
+        }
+        result[i] = sum;
+        }
+        return result;
+    }
+};
+
+we know that our loop is two times so it is big on of n2 so to be optimzie we can look we notice that in this array we were calculating sum it was the sum of previous sum.
+so what about we just calculate prefix sum and then add currnet num and pishbit tihe array
+
+we know that sum of first elemnt is always iti won vlaue but next time sum is gonna be sum of proeviousm value os in this manner we can just clacualte preovious sum with currnet sum
+
+nums =0;
+result[0] = nums[0]
+
+for(1 to n)
+//result[i] means our array sum 
+result[i] = nums[i] + result[i-1];
+
+class Solution {
+public:
+    vector<int> runningSum(vector<int>& nums) {
+        for(int i=1;i<nums.size();i++){
+        nums[i]=nums[i]+nums[i-1];
+        }
+        return nums;
+    }
+};
+
+most optimal solution

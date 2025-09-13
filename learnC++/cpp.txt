@@ -1,0 +1,404 @@
+Awesome—here’s a **max-coverage Modern C++ roadmap + topic map** from zero → expert, including fundamentals, control flow (yes: `if/else`, `switch`, **ternary**), STL, templates, concurrency, build/dev tooling, AND a deep DSA catalog. It’s organized so you can track everything you need to learn.
+
+---
+
+# 1) Language Basics & Toolchain
+
+* **Tooling & Workflow**
+
+  * Compilers: GCC, Clang, MSVC
+  * Build systems: **CMake** (modern targets, FetchContent, find\_package, install/export), Meson
+  * Package managers: **vcpkg**, **Conan**
+  * Flags: `-std=c++20`, `-O2/-O3`, `-g`, `-Wall -Wextra -Wpedantic`, LTO, PGO
+  * Sanitizers: **ASan**, **UBSan**, **TSan**, **MSan**
+  * Debugging: **gdb**, **lldb**, Visual Studio debugger
+  * Profiling: perf, callgrind, VTune, flamegraphs
+  * Formatting/Linting: **clang-format**, **clang-tidy**, include-what-you-use
+* **Program Structure**
+
+  * Translation units, headers vs sources
+  * `main()`, return codes
+  * Namespaces (`namespace`, nested, **inline namespace**)
+* **Preprocessor**
+
+  * `#include`, include guards, `#pragma once`
+  * `#define` macros, **variadic macros**, stringize `#`, paste `##`
+  * Conditional compilation: `#if/#ifdef/#ifndef/#elif/#endif`
+  * `__FILE__`, `__LINE__`, `__DATE__`, `__TIME__`
+* **Lexical & Types**
+
+  * Keywords, identifiers, scopes, linkage (external/internal)
+  * **Fundamental types**: `bool`, `char`/`wchar_t`/`char8_t`/`char16_t`/`char32_t`, `short/int/long/long long`, `float/double/long double`, `void`, `nullptr_t`
+  * **Type modifiers**: `signed/unsigned`, `const`, `volatile`, `mutable`
+  * **Type info & alignment**: `typeid`, `alignof`, `alignas`
+* **Variables & Storage**
+
+  * Storage duration: automatic, static, thread-local, dynamic
+  * `static` (linkage & storage), `extern`
+  * Initialization: zero/value/default/direct/list/uniform brace init
+  * **Aggregate init**, default member initializers
+  * **Designated initializers** (C++20; compiler support varies)
+* **Conversions**
+
+  * Implicit/explicit conversions, promotion/rank
+  * Casts: `static_cast`, `const_cast`, `reinterpret_cast`, `dynamic_cast`, C-style casts
+  * **User-defined conversions**, `explicit` (C++20: `explicit(bool)`)
+
+---
+
+# 2) Operators & Control Flow
+
+* **Arithmetic**: `+ - * / % ++ --`
+* **Relational**: `== != < > <= >=`
+* **Logical**: `&& || !`
+* **Bitwise**: `& | ^ ~ << >>`, precedence & pitfalls
+* **Assignment**: `= += -= *= /= %= &= |= ^= <<= >>=`
+* **Other**: `?:` (**ternary**), comma `,`, `sizeof`, `typeid`, `alignof`, `new/delete`, `::` scope, `.`/`->`
+* **Control Statements**
+
+  * `if`, `else if`, `else`
+  * **Ternary** `cond ? a : b` (conditional expression)
+  * `switch` + `case`, `default`, fallthrough (and `[[fallthrough]]`)
+  * Loops: `for`, `while`, `do-while`
+  * **Range-for**: `for (auto& e : container)`
+  * Jump: `break`, `continue`, `return`, `goto` (avoid)
+* **Short-circuit rules**, sequencing, order of evaluation (C++17 clarifications)
+
+---
+
+# 3) Functions & Parameters
+
+* Declarations/definitions, header placement, inline
+* Overloading (rules, best match), default args
+* **Inline functions**, `constexpr`/`consteval` functions
+* **Lambda expressions**: captures (`=`, `&`, **init-captures**), `mutable`, `constexpr` lambdas, generic lambdas, templated lambdas (C++20), `this` capture, `[=,*this]`
+* Parameter passing: by value, `T&`, `const T&`, pointer, `T&&` (forwarding ref)
+* Return types, trailing return `auto f() -> T`
+* **Perfect forwarding**, `std::forward`, `std::move`
+* **Function pointers**, `std::function`, callable objects
+
+---
+
+# 4) Memory Model & Resource Management
+
+* **Manual memory**: `new/delete`, arrays `new[]/delete[]`, placement-new
+* **Smart pointers**: `std::unique_ptr`, `std::shared_ptr`, `std::weak_ptr`, custom deleters, cycles
+* **RAII**: deterministic cleanup, resource guards
+* **Allocator model**, `std::allocator`, polymorphic memory resource (PMR)
+* **Alignment**: `alignas`, `std::aligned_alloc`, over-aligned new
+* **Object lifetime**: construction, destruction, lifetime extension, dangling
+* Copy elision & **guaranteed elision** (C++17), NRVO
+* Small/Short buffer optimizations (SSO), EBO (empty base optimization)
+
+---
+
+# 5) Object-Oriented Programming
+
+* **Classes/structs**: members, methods, access control
+* Special members: default/copy/move ctor, dtor, copy/move assign; `=default`, `=delete`
+* **Rule of 0/3/5**
+* `this` pointer, **explicit** constructors, conversion operators
+* **Inheritance**: public/protected/private, multiple inheritance, virtual inheritance
+* **Virtual dispatch**: `virtual`, `override`, `final`, vtables, virtual destructors
+* **Polymorphism**: runtime vs compile-time
+* **Encapsulation/Abstraction**
+* **PImpl** idiom
+* **Friend** functions/classes, hidden friends (ADL)
+* `enum` vs **`enum class`**
+
+---
+
+# 6) Templates & Generic Programming
+
+* **Function & class templates**
+* **Non-type template params** (incl. `auto` NTTP, C++17)
+* Partial/explicit specialization
+* Template template parameters
+* Deduction guides, **CTAD** (C++17)
+* Dependent names: `typename`, `template` disambiguator
+* **SFINAE**, `std::enable_if`, tag dispatch
+* **Type traits**, `std::void_t`, detection idiom
+* **Fold expressions** (C++17)
+* **Concepts** (C++20): `requires`, defining concepts, constraining templates, abbreviated function templates
+* **constexpr** programming, `consteval`, `constinit`
+* Compile-time containers/algorithms (feasible subsets)
+
+---
+
+# 7) The Standard Library (Core)
+
+* **STL Containers**
+
+  * Sequence: `vector`, `deque`, `list`, `forward_list`, `array`, `basic_string`
+  * Associative: `set`, `multiset`, `map`, `multimap`
+  * Unordered: `unordered_set/map/multiset/multimap` (hashing, load factor)
+  * Adapters: `stack`, `queue`, `priority_queue`
+* **Iterators & Ranges**
+
+  * Iterator categories (input/output/forward/bidir/random)
+  * Iterator utilities: `advance`, `next`, `prev`, `distance`, inserters
+  * **Ranges (C++20/23)**:
+
+    * `std::ranges` algorithms + projections
+    * Views: `iota`, `take/drop`, `filter`, `transform`, `join`, `split`, `zip` (C++23), `chunk`, `slide`, `keys/values` (C++23)
+    * Range concepts, sentinels, borrow
+* **Algorithms**
+
+  * Classic: `sort`, `stable_sort`, `partial_sort`, `nth_element`
+  * Search: `find`, `lower_bound`, `upper_bound`, `binary_search`, `equal_range`
+  * Modify: `copy/move/fill/transform/replace/remove/unique/rotate/partition`
+  * Numeric: `accumulate`, `inner_product`, `partial_sum`, `iota`
+  * Set: `set_union/intersection/difference/symmetric_difference`
+  * Permutations: `next_permutation`, `prev_permutation`
+  * Parallel algorithms & **execution policies** (C++17)
+* **Utility**
+
+  * `pair`, `tuple`, `tie`, structured bindings
+  * `optional` (C++17), `variant`, `any`
+  * **`expected` (C++23)**, monadic ops (where available)
+  * `string_view`
+  * `bitset`, `<bit>` (population count, bit ops)
+  * `span` (C++20), **`mdspan` (C++23)**
+* **Strings & Locales**
+
+  * `std::string`/`wstring`/`u8/u16/u32` strings
+  * `ostringstream/istringstream`
+  * Locale facets (formatting, numpunct)
+* **I/O**
+
+  * iostreams hierarchy, stream states
+  * Format: **`std::format` (C++20)**, **`std::print` (C++23, `<print>`)**
+  * Files: `ifstream/ofstream/fstream`, binary I/O
+* **Filesystem (C++17)**
+
+  * `std::filesystem::path`, iteration, file\_status, copy/move/remove
+* **Time & Date**
+
+  * `<chrono>` durations/time\_points/clocks
+  * Calendars/time zones (C++20), `zoned_time`, `format` with chrono
+* **Random**
+
+  * Engines (mt19937), distributions (uniform, normal, etc.)
+* **Math & Numbers**
+
+  * `<cmath>`, `<numeric>`, `<numbers>` (C++20 constants)
+  * Special functions `<cmath>` (erf, lgamma, …)
+
+---
+
+# 8) Concurrency & Parallelism
+
+* **Threads**: `std::thread`, join/detach
+* **Mutexes**: `std::mutex`, `timed_mutex`, `recursive_mutex`, `shared_mutex` (RW)
+* Locks: `lock_guard`, `unique_lock`, `scoped_lock`
+* **Condition variables**
+* **Atomics**: `std::atomic<T>`, memory orders (relaxed, acquire/release, acq\_rel, seq\_cst), fences
+* **Futures/Promises**: `std::future`, `std::promise`, `std::async`, `packaged_task`
+* **C++20 additions**: `std::jthread`, `stop_token`, `latch`, `barrier`, `semaphore`
+* **Parallel algorithms** & execution policies
+* **Coroutines (C++20)**: `co_await`, `co_yield`, `co_return`, promise types, awaitables/awaiters, generators/task patterns
+* Lock-free concepts, ABA, hazard pointers (library/topic-level)
+
+---
+
+# 9) Modules & Build
+
+* **Modules (C++20)**: `export module`, `import`, partitions, header units, global module fragment
+* ABI considerations, name mangling (Itanium/MSVC), ODR, inline variables (C++17)
+* Static vs shared libraries, visibility (`__attribute__((visibility))`, `__declspec(dllexport)`)
+
+---
+
+# 10) Error Handling & Contracts
+
+* **Exceptions**: `try/catch`, stack unwinding, exception safety guarantees (basic/strong/nothrow), `noexcept`, throwing vs nothrow new
+* Alternatives to exceptions: return codes, **`std::expected`**, error enums
+* Assertions: `assert`, `static_assert`
+* (Contracts TS not standardized yet; concepts partially cover intent)
+
+---
+
+# 11) Advanced Language Mechanics
+
+* **Name lookup**, ADL (Koenig), hidden friends
+* Overload resolution ranking
+* Value categories: lvalue/xvalue/prvalue; reference collapsing rules
+* **Forwarding references** vs rvalue refs
+* **Dependent types**, two-phase lookup
+* **Linkage** & ODR (odr-use), inline functions/variables to fix ODR issues
+* **Undefined Behavior** hotspots:
+
+  * Dangling, double free, use-after-free
+  * Out-of-bounds, uninitialized
+  * Signed overflow, strict aliasing, data races
+  * Violating lifetime, invalid pointer arithmetic
+* **Volatile** (what it is / is not), memory-mapped I/O
+* **Bit-fields**, unions, standard-layout, trivial/POD
+
+---
+
+# 12) Patterns, Idioms & Design
+
+* RAII everywhere
+* PImpl, CRTP, EBO, SSO
+* Type erasure (e.g., `std::function`, any/variant-based)
+* Visitor (with `std::variant`), Strategy, Factory, Singleton (with caveats), Observer
+* Builder, Adapter, Facade, Proxy
+* Command, State
+* Immutability where possible; value semantics by default
+
+---
+
+# 13) Text, Unicode, and Localization
+
+* Encodings: UTF-8 (`char8_t`), UTF-16/32
+* `std::u8string/u16string/u32string`
+* Conversions, locales, `codecvt` (deprecated; use libraries)
+
+---
+
+# 14) Interop & Ecosystem
+
+* **C Interop**: `extern "C"`, layout-compatibility, ABI
+* **Python bindings**: **pybind11**
+* Popular libs: **fmt** (if `<format>` not enough), **Boost** (Asio, Beast, Filesystem if pre-C++17), Eigen/Armadillo (linear algebra), nlohmann/json, Protobuf/Cap’n Proto, gRPC
+* **Networking**: Boost.Asio/Standalone Asio (async I/O), HTTP with Beast/cpr
+* **GUI**: Qt, wxWidgets, Dear ImGui
+* **Graphics**: OpenGL/Vulkan/SDL/SFML
+* **ML/Num**: oneDNN, OpenCV
+* **Embedded**: HALs, FreeRTOS, register access patterns
+
+---
+
+# 15) Testing & Quality
+
+* **Unit testing**: GoogleTest, Catch2, doctest
+* **Property-based testing**: rapidcheck
+* **Fuzzing**: libFuzzer, AFL++
+* **CI**: CTest + CMake, GitHub Actions, GitLab CI
+* Code coverage: gcov/llvm-cov
+
+---
+
+# 16) File, Data, and Serialization
+
+* Binary I/O, endianness, struct packing/alignment
+* CSV/JSON/TOML/YAML (nlohmann/json, toml++, yaml-cpp)
+* Protocol buffers, FlatBuffers, Cap’n Proto
+* SQLite/MySQL connectors
+
+---
+
+# 17) Security & Reliability
+
+* Bounds checking, safe integer ops
+* Avoid UB & data races
+* Safe APIs (span/string\_view), lifetime annotations (docs/static analysis)
+* Hardened toolchains, sanitizers, fuzzing, threat modeling basics
+
+---
+
+# 18) Modern C++ by Standard (grab bag)
+
+* **C++11**: auto, range-for, move semantics, rvalue refs, constexpr, lambda, enum class, variadic templates, `unique_ptr`, `thread`, atomics, chrono, regex, random
+* **C++14**: generic lambdas, return type deduction, `make_unique`, relaxed constexpr
+* **C++17**: structured bindings, `if/switch` with init, inline variables, fold expressions, `std::optional/variant/any/string_view`, `filesystem`, parallel algorithms, `std::byte`
+* **C++20**: **concepts**, **ranges**, **coroutines**, **modules**, `span`, `format`, `chrono` tz/calendar, `jthread/stop_token`, barriers/latches/semaphores, `constexpr` extensions, designated init (limited)
+* **C++23**: **`std::expected`**, **`std::print`**, `mdspan`, ranges additions (zip, chunk, slide, etc.), `move_only_function`, `flat_map` (if implemented), improvements across library
+
+---
+
+# 19) DSA in C++ (Interview & Competitive)
+
+**Arrays & Strings**
+
+* Two-pointer, sliding window, prefix/suffix sums, difference arrays
+* String hashing (polynomial/rolling), Z-algorithm, prefix-function (KMP), Manacher’s, suffix array/tree, LPS, Aho–Corasick
+
+**Lists, Stacks, Queues**
+
+* Singly/doubly/circular lists; LRU cache; monotonic stack/queue
+
+**Trees**
+
+* Binary tree, BST ops, AVL, Red-Black, Treaps, Splay
+* Order statistic tree (PBDS / policy-based DS)
+* Segment tree (+ lazy propagation), Fenwick tree (BIT), Sparse table
+* **Heavy–Light decomposition**, Centroid decomposition, Euler tour
+* Persistent DS (persistent segtree/bst)
+
+**Graphs**
+
+* Representations, BFS/DFS, components
+* Shortest paths: Dijkstra, 0-1 BFS, Bellman–Ford, Floyd–Warshall
+* MST: Kruskal (DSU), Prim
+* **DSU** (union by rank, path compression)
+* Toposort (Kahn/DFS), DAG DP
+* Bridges & articulation points (Tarjan), SCC (Kosaraju/Tarjan)
+* **Matchings**: Bipartite (Hopcroft–Karp), Hungarian (assignment)
+* **Flows**: Edmonds–Karp, Dinic, Min-cost max-flow
+
+**Heaps & Priority Queues**
+
+* Binary heap, pairing heap, d-ary heap
+* `priority_queue`, custom comparators
+
+**Number Theory**
+
+* GCD/EGCD, mod arithmetic, fast power, inverse (Fermat/EGCD)
+* Sieve/segmented sieve, totient, CRT, primitive roots
+* Primality: Miller–Rabin, factorization: Pollard’s Rho
+
+**DP**
+
+* Classic 1D/2D, bitmask DP, knuth optimization, divide\&conquer DP, convex hull trick
+* Tree DP, rerooting DP
+
+**Geometry**
+
+* Vectors, dot/cross product, orientation
+* Segment intersection, line/segment distance
+* Convex hull (Graham/Andrew), rotating calipers
+* Closest pair (divide\&conquer), sweep line (events)
+* Point in polygon (ray casting/winding)
+
+**Misc**
+
+* MO’s algorithm, offline queries
+* Randomization (reservoir sampling)
+* FFT/NTT, convolution
+* Matrix exponentiation
+* Bit hacks (popcount, lowbit, masks)
+
+---
+
+# 20) Real-World Dev with C++
+
+* **Networking**: Asio/Boost.Asio, HTTP (Beast/cpr), WebSockets
+* **Desktop GUI**: Qt (signals/slots, QML), wxWidgets, Dear ImGui
+* **Game Dev**: SDL2/SFML, ECS patterns, input, audio, rendering pipelines
+* **Graphics**: OpenGL/Vulkan basics, shaders (GLSL), model loading (Assimp)
+* **Embedded/RT**: register access (volatile), ISRs, RT constraints, lock-free patterns, FreeRTOS
+* **Interfacing**: COM on Windows, POSIX on Linux/macOS
+* **Scripting bridges**: Lua (sol2), Python (pybind11)
+* **Data/ML**: OpenCV, ONNX Runtime, oneDNN
+
+---
+
+## Mini “Checklists” for your specific ask
+
+* **Conditionals**: `if/else`, `else if`, `switch`, `default`, fallthrough, **ternary `?:`**
+* **Loops**: `for`, `while`, `do`, **range-for**, loop control (`break/continue`)
+* **Every init style**: zero/value/default/direct/list/aggregate/brace, designated (C++20\*)
+* **Every cast**: `static/dynamic/reinterpret/const_cast`, implicit, C-cast
+* **Every pointer kind**: raw, `unique_ptr/shared_ptr/weak_ptr`, pointer-to-member, function pointers
+* **Every function form**: normal, inline, `constexpr/consteval`, lambda (generic/template), `noexcept`, trailing return, perfect forwarding
+* **Every template trick**: SFINAE, `enable_if`, concepts, fold expr, traits, detection idiom, NTTPs, CTAD, deduction guides
+* **Concurrency palette**: threads, mutexes, locks, cv, atomics (orders), futures/promises/async, jthread/stop\_token, latch/barrier/semaphore, coroutines
+* **Ranges**: algorithms + views (filter/transform/take/drop/join/split/zip/chunk/slide/keys/values)
+* **Files & time**: filesystem, chrono (tz), format/print
+* **Error handling**: exceptions, `noexcept`, `std::error_code`, **`std::expected`**
+
+---
+
+If you want, I can convert this into a **printable PDF syllabus** or a **week-by-week learning plan** with curated exercises and project milestones (DSA + dev).

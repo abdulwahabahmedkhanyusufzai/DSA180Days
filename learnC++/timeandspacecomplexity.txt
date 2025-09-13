@@ -1,0 +1,205 @@
+Got it 👍 You’re asking about **TC (Time Complexity)** and **SC (Space Complexity)** in **C++**.
+Let’s go step by step with **deep detail** so you understand how to analyze any program.
+
+---
+
+# 🔹 1. What is Time Complexity (TC)?
+
+Time Complexity measures **how the runtime of a program grows** with the size of the input `n`.
+It ignores machine speed and focuses on the number of **basic operations** (comparisons, assignments, function calls, etc.).
+
+👉 Think of it as:
+**“How does the running time scale if input becomes very large?”**
+
+### Example 1: Constant Time – `O(1)`
+
+```cpp
+int getFirstElement(vector<int>& arr) {
+    return arr[0]; // Just one access
+}
+```
+
+✅ Always **1 operation** → `O(1)`.
+
+---
+
+### Example 2: Linear Time – `O(n)`
+
+```cpp
+int sumArray(vector<int>& arr) {
+    int sum = 0;
+    for (int x : arr) {   // loop runs n times
+        sum += x;
+    }
+    return sum;
+}
+```
+
+✅ Loop runs `n` times → Time = proportional to `n`.
+
+---
+
+### Example 3: Quadratic Time – `O(n^2)`
+
+```cpp
+void printPairs(vector<int>& arr) {
+    int n = arr.size();
+    for (int i = 0; i < n; i++) {         // n times
+        for (int j = 0; j < n; j++) {     // n times
+            cout << arr[i] << ", " << arr[j] << endl;
+        }
+    }
+}
+```
+
+✅ Nested loop → `n * n = n^2` → `O(n^2)`.
+
+---
+
+### Example 4: Logarithmic Time – `O(log n)`
+
+```cpp
+int binarySearch(vector<int>& arr, int target) {
+    int low = 0, high = arr.size() - 1;
+    while (low <= high) {
+        int mid = (low + high) / 2;
+        if (arr[mid] == target) return mid;
+        else if (arr[mid] < target) low = mid + 1;
+        else high = mid - 1;
+    }
+    return -1;
+}
+```
+
+✅ Each step halves the array → about `log₂(n)` steps.
+
+---
+
+### Common Time Complexities in C++
+
+* **O(1)** → Constant time (array access, hash map insert)
+* **O(log n)** → Binary search, balanced BST search
+* **O(n)** → Linear scan, traversing an array
+* **O(n log n)** → Merge Sort, QuickSort (average), HeapSort
+* **O(n²)** → Bubble Sort, Insertion Sort (worst case)
+* **O(2^n)** → Recursive Fibonacci without DP
+* **O(n!)** → Traveling Salesman brute force
+
+---
+
+# 🔹 2. What is Space Complexity (SC)?
+
+Space Complexity measures **how much memory** a program uses depending on input size `n`.
+
+👉 It includes:
+
+1. **Fixed Part** → Constants, program instructions, variables (`int x`, `char c`).
+2. **Variable Part** → Depends on input (`n` sized arrays, recursion stack, dynamic allocations).
+
+---
+
+### Example 1: Constant Space – `O(1)`
+
+```cpp
+int sum(vector<int>& arr) {
+    int total = 0;  // fixed space
+    for (int x : arr) {
+        total += x;
+    }
+    return total;
+}
+```
+
+✅ Uses only `total` + loop variable → **constant space**.
+
+---
+
+### Example 2: Linear Space – `O(n)`
+
+```cpp
+vector<int> copyArray(vector<int>& arr) {
+    vector<int> newArr(arr.size());
+    for (int i = 0; i < arr.size(); i++) {
+        newArr[i] = arr[i];
+    }
+    return newArr;
+}
+```
+
+✅ Extra array of size `n` → Space = `O(n)`.
+
+---
+
+### Example 3: Recursive Calls – `O(n)`
+
+```cpp
+int factorial(int n) {
+    if (n == 0) return 1;
+    return n * factorial(n - 1);
+}
+```
+
+✅ Recursion stack depth = `n` → Space = `O(n)`.
+
+---
+
+### Example 4: Logarithmic Space – `O(log n)`
+
+```cpp
+int binarySearchRecursive(vector<int>& arr, int low, int high, int target) {
+    if (low > high) return -1;
+    int mid = (low + high) / 2;
+    if (arr[mid] == target) return mid;
+    else if (arr[mid] < target) return binarySearchRecursive(arr, mid + 1, high, target);
+    else return binarySearchRecursive(arr, low, mid - 1, target);
+}
+```
+
+✅ Recursion depth = `log n` → Space = `O(log n)`.
+
+---
+
+# 🔹 3. How to Analyze TC & SC in C++
+
+### Steps:
+
+1. **Find input size (`n`)** → number of elements, string length, graph nodes, etc.
+2. **Count loops & recursions**:
+
+   * Single loop → `O(n)`
+   * Nested loops → multiply (`O(n²)`)
+   * Divide and conquer → `O(log n)`
+3. **Consider auxiliary space**:
+
+   * Arrays, vectors, hash maps, recursion stack.
+
+---
+
+# 🔹 4. Quick Comparison Table
+
+| Operation              | Time Complexity             | Space Complexity           |
+| ---------------------- | --------------------------- | -------------------------- |
+| Array access           | O(1)                        | O(1)                       |
+| Traversing array       | O(n)                        | O(1)                       |
+| Merge Sort             | O(n log n)                  | O(n)                       |
+| Quick Sort             | O(n log n) avg, O(n²) worst | O(log n) (recursion stack) |
+| Hash map insert/search | O(1) avg, O(n) worst        | O(n)                       |
+| BFS/DFS in graph       | O(V+E)                      | O(V)                       |
+
+---
+
+✅ In short:
+
+* **TC tells us how fast a program runs.**
+* **SC tells us how much memory it consumes.**
+
+---
+
+Do you want me to also create a **cheat sheet of common C++ STL operations (like vector, map, unordered\_map, set) with their TC & SC**? That will help a lot for interviews like Google.
+
+    0 1 2 3 4
+i=0 3 3 3 3 3 
+i=1 3 2 2 2 3 j-1 
+i=2 3 2 1 2 3 
+i=3 3 2 2 2 3 
+i=4 3 3 3 3 3
