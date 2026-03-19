@@ -44,6 +44,7 @@ move "dsaDay1\TwoPointers\Oppositedirection\Easy\easy.cpp" "05_Two_Pointers\remo
 
 :: Recursion
 move "print1toNusingRecursion.cpp" "06_Recursion\" >nul 2>&1
+move "reverseArrayusingRecurson.cpp" "06_Recursion\" >nul 2>&1
 
 :: Cleanup empty old directories
 rmdir /S /Q "dsaDay1" 2>nul
