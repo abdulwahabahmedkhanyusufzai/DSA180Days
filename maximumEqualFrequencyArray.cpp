@@ -1,5 +1,4 @@
 #include <vector>
-#include <unordered_map>
 #include <algorithm>
 
 using namespace std;
@@ -7,58 +6,52 @@ using namespace std;
 class Solution {
 public:
     int maxEqualFreq(vector<int>& nums) {
-        unordered_map<int, int> count; // num -> its frequency
-        unordered_map<int, int> freq;  // frequency -> how many nums have it
-        int max_len = 0;
-        int distinct_elements = 0;
+        // Use arrays instead of maps for speed (constraints say nums[i] <= 10^5)
+        int count[100001] = {0}; // frequency of each number
+        int freq[100001] = {0};  // frequency of frequencies
+        
+        int max_f = 0;
+        int distinct = 0;
+        int res = 0;
 
         for (int i = 0; i < nums.size(); i++) {
-            int x = nums[i];
-            int f = count[x];
+            int num = nums[i];
             
-            // If it already had a frequency, decrease the old frequency bucket
-            if (f > 0) {
-                freq[f]--;
+            // Update the frequency buckets
+            if (count[num] > 0) {
+                freq[count[num]]--;
             } else {
-                distinct_elements++;
+                distinct++;
             }
             
-            // Increase count and update the new frequency bucket
-            count[x]++;
-            f = count[x];
+            count[num]++;
+            int f = count[num];
             freq[f]++;
-
-            int current_prefix_len = i + 1;
             
-            // Check the 4 Golden Rules
-            // 1. All elements appear once
-            if (freq[1] == current_prefix_len) {
-                max_len = current_prefix_len;
+            max_f = max(max_f, f);
+            
+            int L = i + 1; // Current prefix length
+            
+            // Condition 1: All elements are unique (e.g., 1, 2, 3, 4)
+            if (max_f == 1) {
+                res = L;
             }
-            // 2. Only one distinct element exists
-            else if (freq[current_prefix_len] == 1) {
-                max_len = current_prefix_len;
+            // Condition 2: All elements have the same frequency except one '1'
+            // (e.g., 1, 1, 2, 2, 3) -> 2 * 2 + 1 = 5
+            else if (freq[max_f] * max_f == L - 1 && freq[1] == 1) {
+                res = L;
             }
-            // 3. One element with freq 1, others with freq 'f'
-            // Equation: 1 * 1 + (distinct - 1) * f == current_prefix_len
-            else {
-                // Find the frequency 'f' that isn't the outlier
-                // We check if there's an element with frequency 1
-                if (freq[1] == 1 && freq[f] * f == current_prefix_len - 1) {
-                    max_len = current_prefix_len;
-                }
-                // 4. One element with freq 'f + 1', others with freq 'f'
-                // Equation: 1 * (f + 1) + (distinct - 1) * f == current_prefix_len
-                else if (freq[f] == 1 && freq[f - 1] * (f - 1) == current_prefix_len - f) {
-                    max_len = current_prefix_len;
-                }
-                // Extra check for when 'f' is the outlier (larger than others)
-                else if (freq[f+1] == 1 && freq[f] * f == current_prefix_len - (f + 1)) {
-                    max_len = current_prefix_len;
-                }
+            // Condition 3: One element has max_f, others have max_f - 1
+            // (e.g., 1, 1, 2, 2, 2) -> 1 * 3 + (2-1) * 2 = 5
+            else if ((freq[max_f - 1] + 1) * (max_f - 1) == L - 1 && freq[max_f] == 1) {
+                res = L;
+            }
+            // Condition 4: Only one distinct element (e.g., 1, 1, 1, 1)
+            else if (max_f == L) {
+                res = L;
             }
         }
 
-        return max_len;
+        return res;
     }
 };
