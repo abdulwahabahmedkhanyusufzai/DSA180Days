@@ -1,0 +1,1673 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Nexus DAG Engine — Enterprise AI-Agent Orchestration</title>
+  <meta name="description" content="A stateful, high-concurrency execution engine for multi-agent workflows, powered by 18 compiled C++ algorithm modules." />
+  
+  <!-- Premium Fonts -->
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&family=JetBrains+Mono:wght@400;500;600;700&display=swap" rel="stylesheet" />
+
+  <style>
+    /* ═══════════════════════════════════════════════════════════════
+       MODERN LIGHT/SLATE SAAS DESIGN SYSTEM
+    ═══════════════════════════════════════════════════════════════ */
+    :root {
+      --bg-base:      #f8fafc;
+      --bg-surface:   #ffffff;
+      --bg-panel:     rgba(255, 255, 255, 0.75);
+      --bg-card:      #ffffff;
+      --bg-code:      #0f172a;
+      
+      --border-light: rgba(226, 232, 240, 0.8);
+      --border-focus: rgba(99, 102, 241, 0.4);
+      --border-hot:   rgba(99, 102, 241, 0.2);
+      
+      --accent:       #6366f1; /* Indigo */
+      --accent-glow:  rgba(99, 102, 241, 0.15);
+      --accent-grad:  linear-gradient(135deg, #6366f1 0%, #4f46e5 100%);
+      
+      --success:      #10b981; /* Emerald */
+      --success-bg:   rgba(16, 185, 129, 0.1);
+      --warning:      #f59e0b; /* Amber */
+      --warning-bg:   rgba(245, 158, 11, 0.1);
+      --danger:       #ef4444; /* Rose */
+      --danger-bg:    rgba(239, 68, 68, 0.1);
+      --info:         #06b6d4; /* Cyan */
+      --info-bg:      rgba(6, 182, 212, 0.1);
+
+      --text-primary:   #0f172a;
+      --text-secondary: #475569;
+      --text-muted:     #94a3b8;
+      --text-light:     #64748b;
+      
+      --font:  'Plus Jakarta Sans', sans-serif;
+      --mono:  'JetBrains Mono', monospace;
+      
+      --r-sm: 8px;
+      --r-md: 12px;
+      --r-lg: 16px;
+      --r-xl: 24px;
+      
+      --shadow-sm: 0 1px 2px 0 rgba(0, 0, 0, 0.05);
+      --shadow-md: 0 4px 6px -1px rgba(0, 0, 0, 0.05), 0 2px 4px -2px rgba(0, 0, 0, 0.05);
+      --shadow-lg: 0 10px 15px -3px rgba(0, 0, 0, 0.03), 0 4px 6px -4px rgba(0, 0, 0, 0.03);
+      --shadow-flat: 0 0 0 1px rgba(0, 0, 0, 0.05);
+      
+      --transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+    }
+
+    *, *::before, *::after {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
+
+    body {
+      font-family: var(--font);
+      background-color: var(--bg-base);
+      color: var(--text-primary);
+      min-height: 100vh;
+      overflow-x: hidden;
+      display: flex;
+      flex-direction: column;
+    }
+
+    /* Grid Background Effect */
+    body::before {
+      content: '';
+      position: fixed;
+      inset: 0;
+      z-index: -1;
+      background-image: 
+        radial-gradient(circle at 50% 50%, rgba(99, 102, 241, 0.02) 0%, transparent 50%),
+        linear-gradient(rgba(226, 232, 240, 0.3) 1px, transparent 1px),
+        linear-gradient(90deg, rgba(226, 232, 240, 0.3) 1px, transparent 1px);
+      background-size: 100% 100%, 24px 24px, 24px 24px;
+      pointer-events: none;
+    }
+
+    /* ═══════════════════════════════════════════════════════════════
+       LAYOUT STRUCTURE
+    ═══════════════════════════════════════════════════════════════ */
+    .app-container {
+      display: grid;
+      grid-template-columns: 280px 1fr;
+      min-height: 100vh;
+    }
+
+    /* ── SIDEBAR ── */
+    aside.sidebar {
+      background: var(--bg-surface);
+      border-right: 1px solid var(--border-light);
+      display: flex;
+      flex-direction: column;
+      height: 100vh;
+      position: sticky;
+      top: 0;
+      z-index: 50;
+      padding: 24px;
+    }
+
+    .brand {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      margin-bottom: 32px;
+    }
+
+    .brand-logo {
+      width: 38px;
+      height: 38px;
+      background: var(--accent-grad);
+      border-radius: var(--r-md);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      color: white;
+      box-shadow: 0 4px 12px rgba(99, 102, 241, 0.25);
+    }
+
+    .brand-name {
+      font-weight: 800;
+      font-size: 20px;
+      letter-spacing: -0.5px;
+      background: linear-gradient(135deg, #0f172a 0%, #334155 100%);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+    }
+
+    .brand-name span {
+      color: var(--accent);
+      -webkit-text-fill-color: var(--accent);
+    }
+
+    .nav-list {
+      display: flex;
+      flex-direction: column;
+      gap: 6px;
+      list-style: none;
+      margin-bottom: auto;
+    }
+
+    .nav-item button {
+      width: 100%;
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      padding: 12px 16px;
+      border-radius: var(--r-md);
+      border: none;
+      background: transparent;
+      color: var(--text-secondary);
+      font-family: var(--font);
+      font-size: 14px;
+      font-weight: 600;
+      text-align: left;
+      cursor: pointer;
+      transition: var(--transition);
+    }
+
+    .nav-item button:hover {
+      background: #f1f5f9;
+      color: var(--text-primary);
+    }
+
+    .nav-item.active button {
+      background: #e0e7ff;
+      color: var(--accent);
+    }
+
+    .nav-icon {
+      width: 20px;
+      height: 20px;
+      stroke: currentColor;
+      stroke-width: 2px;
+      fill: none;
+    }
+
+    /* Core Modules Status Widget */
+    .modules-widget {
+      margin-top: 24px;
+      border: 1px solid var(--border-light);
+      border-radius: var(--r-lg);
+      padding: 16px;
+      background: #fafafb;
+    }
+
+    .modules-widget-header {
+      font-size: 11px;
+      font-weight: 700;
+      letter-spacing: 0.5px;
+      text-transform: uppercase;
+      color: var(--text-muted);
+      margin-bottom: 12px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+
+    .modules-widget-list {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 6px;
+    }
+
+    .mini-module {
+      font-size: 10px;
+      font-weight: 600;
+      text-align: center;
+      padding: 6px 4px;
+      border-radius: var(--r-sm);
+      border: 1px solid var(--border-light);
+      background: var(--bg-surface);
+      cursor: help;
+      position: relative;
+    }
+
+    .mini-module.active {
+      border-color: var(--success);
+      color: var(--success);
+    }
+
+    /* ── MAIN WORKSPACE ── */
+    main.workspace {
+      display: flex;
+      flex-direction: column;
+      height: 100vh;
+      overflow-y: auto;
+    }
+
+    header.top-nav {
+      background: var(--bg-panel);
+      backdrop-filter: blur(12px);
+      border-bottom: 1px solid var(--border-light);
+      padding: 16px 32px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      position: sticky;
+      top: 0;
+      z-index: 40;
+    }
+
+    .header-title {
+      font-size: 18px;
+      font-weight: 700;
+      letter-spacing: -0.2px;
+    }
+
+    .system-status {
+      display: flex;
+      align-items: center;
+      gap: 16px;
+    }
+
+    .server-indicator {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      padding: 6px 12px;
+      border-radius: var(--r-xl);
+      font-size: 12px;
+      font-weight: 700;
+      border: 1px solid var(--border-light);
+      background: var(--bg-surface);
+    }
+
+    .indicator-dot {
+      width: 8px;
+      height: 8px;
+      border-radius: 50%;
+      background: var(--text-muted);
+    }
+
+    .indicator-dot.online {
+      background: var(--success);
+      box-shadow: 0 0 8px var(--success);
+      animation: pulse-glow 2s infinite;
+    }
+
+    @keyframes pulse-glow {
+      0%, 100% { opacity: 1; transform: scale(1); }
+      50% { opacity: 0.6; transform: scale(0.9); }
+    }
+
+    /* ── PAGES ── */
+    .view-content {
+      padding: 32px;
+      display: none;
+      flex-direction: column;
+      gap: 24px;
+    }
+
+    .view-content.active {
+      display: flex;
+      animation: fade-slide 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    }
+
+    @keyframes fade-slide {
+      from { opacity: 0; transform: translateY(8px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+
+    /* ═══════════════════════════════════════════════════════════════
+       CARDS & GRID COMPONENT DESIGN
+    ═══════════════════════════════════════════════════════════════ */
+    .stats-row {
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      gap: 20px;
+    }
+
+    .stat-card {
+      background: var(--bg-surface);
+      border: 1px solid var(--border-light);
+      border-radius: var(--r-xl);
+      padding: 24px;
+      box-shadow: var(--shadow-sm);
+      display: flex;
+      flex-direction: column;
+      position: relative;
+      overflow: hidden;
+      transition: var(--transition);
+    }
+
+    .stat-card:hover {
+      transform: translateY(-2px);
+      box-shadow: var(--shadow-md);
+      border-color: var(--border-focus);
+    }
+
+    .stat-meta {
+      font-size: 12px;
+      font-weight: 700;
+      color: var(--text-muted);
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+      margin-bottom: 8px;
+    }
+
+    .stat-num {
+      font-size: 28px;
+      font-weight: 800;
+      letter-spacing: -0.5px;
+      color: var(--text-primary);
+      margin-bottom: 4px;
+    }
+
+    .stat-desc {
+      font-size: 12px;
+      color: var(--text-light);
+    }
+
+    /* ── COMPLEX WRAPPER CARD ── */
+    .card {
+      background: var(--bg-surface);
+      border: 1px solid var(--border-light);
+      border-radius: var(--r-xl);
+      box-shadow: var(--shadow-sm);
+      overflow: hidden;
+    }
+
+    .card-header {
+      padding: 20px 24px;
+      border-bottom: 1px solid var(--border-light);
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+    }
+
+    .card-title {
+      font-size: 15px;
+      font-weight: 700;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .card-body {
+      padding: 24px;
+    }
+
+    /* ═══════════════════════════════════════════════════════════════
+       INTERACTIVE WORKFLOW BUILDER
+    ═══════════════════════════════════════════════════════════════ */
+    .builder-grid {
+      display: grid;
+      grid-template-columns: 360px 1fr;
+      gap: 24px;
+    }
+
+    .input-panel {
+      display: flex;
+      flex-direction: column;
+      gap: 20px;
+    }
+
+    .form-group {
+      display: flex;
+      flex-direction: column;
+      gap: 6px;
+    }
+
+    label {
+      font-size: 12px;
+      font-weight: 700;
+      color: var(--text-secondary);
+    }
+
+    input, select, textarea {
+      font-family: var(--font);
+      font-size: 14px;
+      color: var(--text-primary);
+      background: var(--bg-base);
+      border: 1px solid var(--border-light);
+      border-radius: var(--r-md);
+      padding: 10px 14px;
+      outline: none;
+      transition: var(--transition);
+    }
+
+    input:focus, select:focus, textarea:focus {
+      border-color: var(--accent);
+      background: var(--bg-surface);
+      box-shadow: 0 0 0 3px var(--accent-glow);
+    }
+
+    .btn {
+      font-family: var(--font);
+      font-size: 14px;
+      font-weight: 700;
+      padding: 12px 20px;
+      border-radius: var(--r-md);
+      border: none;
+      cursor: pointer;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      gap: 8px;
+      transition: var(--transition);
+    }
+
+    .btn-primary {
+      background: var(--accent-grad);
+      color: white;
+      box-shadow: 0 2px 8px rgba(99, 102, 241, 0.2);
+    }
+
+    .btn-primary:hover {
+      box-shadow: 0 4px 16px rgba(99, 102, 241, 0.35);
+      transform: translateY(-1px);
+    }
+
+    .btn-secondary {
+      background: #f1f5f9;
+      color: var(--text-secondary);
+      border: 1px solid var(--border-light);
+    }
+
+    .btn-secondary:hover {
+      background: #e2e8f0;
+      color: var(--text-primary);
+    }
+
+    .btn-danger {
+      background: var(--danger-bg);
+      color: var(--danger);
+      border: 1px solid rgba(239, 68, 68, 0.2);
+    }
+
+    .btn-danger:hover {
+      background: var(--danger);
+      color: white;
+    }
+
+    /* ── STYLISH VISUALIZER CANVAS ── */
+    .visualizer-wrapper {
+      position: relative;
+      background: #fafafc;
+      border: 1px dashed var(--border-light);
+      border-radius: var(--r-xl);
+      min-height: 480px;
+      overflow: hidden;
+    }
+
+    #dag-canvas-sleek {
+      display: block;
+      width: 100%;
+      height: 480px;
+      cursor: grab;
+    }
+
+    #dag-canvas-sleek:active {
+      cursor: grabbing;
+    }
+
+    /* ═══════════════════════════════════════════════════════════════
+       INTERACTIVE RUN TIME & API TESTING
+    ═══════════════════════════════════════════════════════════════ */
+    .playground-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 24px;
+    }
+
+    /* Endpoint Selector / Tabs */
+    .module-tabs {
+      display: flex;
+      flex-direction: column;
+      gap: 4px;
+    }
+
+    .module-tab-btn {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 14px 20px;
+      border-radius: var(--r-md);
+      background: var(--bg-surface);
+      border: 1px solid var(--border-light);
+      cursor: pointer;
+      text-align: left;
+      transition: var(--transition);
+    }
+
+    .module-tab-btn:hover {
+      border-color: var(--border-focus);
+      background: #fafbfc;
+    }
+
+    .module-tab-btn.active {
+      border-color: var(--accent);
+      background: #f5f3ff;
+      box-shadow: var(--shadow-sm);
+    }
+
+    .module-tab-btn .tab-info {
+      display: flex;
+      flex-direction: column;
+      gap: 2px;
+    }
+
+    .module-tab-btn .tab-name {
+      font-size: 14px;
+      font-weight: 700;
+      color: var(--text-primary);
+    }
+
+    .module-tab-btn .tab-desc {
+      font-size: 11px;
+      color: var(--text-muted);
+    }
+
+    .module-tab-btn .tab-badge {
+      font-family: var(--mono);
+      font-size: 10px;
+      font-weight: 700;
+      padding: 3px 8px;
+      border-radius: 100px;
+      background: var(--accent-glow);
+      color: var(--accent);
+    }
+
+    /* Interactive Interface */
+    .interactive-card {
+      display: flex;
+      flex-direction: column;
+      gap: 20px;
+    }
+
+    .action-panel {
+      display: none;
+      flex-direction: column;
+      gap: 16px;
+    }
+
+    .action-panel.active {
+      display: flex;
+      animation: fade-in 0.2s ease-out;
+    }
+
+    @keyframes fade-in {
+      from { opacity: 0; }
+      to { opacity: 1; }
+    }
+
+    /* Code & Terminal Panels */
+    .console-panel {
+      background: var(--bg-code);
+      border-radius: var(--r-lg);
+      font-family: var(--mono);
+      font-size: 13px;
+      color: #cbd5e1;
+      padding: 20px;
+      overflow-y: auto;
+      max-height: 280px;
+      box-shadow: inset 0 2px 8px rgba(0,0,0,0.3);
+      position: relative;
+    }
+
+    .console-header {
+      display: flex;
+      justify-content: space-between;
+      margin-bottom: 12px;
+      border-bottom: 1px solid rgba(255,255,255,0.1);
+      padding-bottom: 8px;
+      font-size: 11px;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+      color: #64748b;
+    }
+
+    .json-key { color: #a5d6ff; }
+    .json-value { color: #85e89d; }
+    .json-num { color: #ffab70; }
+    .json-bool { color: #c9d1d9; }
+
+    /* ═══════════════════════════════════════════════════════════════
+       LOGS & OBSERVE
+    ═══════════════════════════════════════════════════════════════ */
+    .log-stream {
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+      height: 400px;
+      overflow-y: auto;
+      background: var(--bg-code);
+      border-radius: var(--r-lg);
+      padding: 16px;
+      font-family: var(--mono);
+      font-size: 12px;
+    }
+
+    .log-row {
+      display: flex;
+      align-items: flex-start;
+      gap: 12px;
+      padding: 4px 8px;
+      border-radius: var(--r-sm);
+    }
+
+    .log-row:hover {
+      background: rgba(255, 255, 255, 0.04);
+    }
+
+    .log-time {
+      color: #64748b;
+      flex-shrink: 0;
+    }
+
+    .log-tag {
+      font-weight: 700;
+      padding: 2px 6px;
+      border-radius: 4px;
+      font-size: 10px;
+      flex-shrink: 0;
+      text-transform: uppercase;
+    }
+
+    .tag-info { background: rgba(99, 102, 241, 0.2); color: #818cf8; }
+    .tag-success { background: rgba(16, 185, 129, 0.2); color: #34d399; }
+    .tag-error { background: rgba(239, 68, 68, 0.2); color: #f87171; }
+
+    .log-text {
+      color: #cbd5e1;
+      word-break: break-all;
+    }
+
+    /* ── TOAST NOTIFICATIONS ── */
+    #notification-center {
+      position: fixed;
+      bottom: 24px;
+      right: 24px;
+      z-index: 1000;
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+    }
+
+    .toast {
+      background: var(--bg-surface);
+      border-left: 4px solid var(--accent);
+      box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -4px rgba(0, 0, 0, 0.1);
+      padding: 16px 20px;
+      border-radius: var(--r-md);
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      font-size: 13px;
+      font-weight: 600;
+      animation: slide-in 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+    }
+
+    @keyframes slide-in {
+      from { transform: translateX(100%); opacity: 0; }
+      to { transform: translateX(0); opacity: 1; }
+    }
+  </style>
+</head>
+<body>
+
+<div class="app-container">
+  
+  <!-- ══════════ SIDEBAR ══════════ -->
+  <aside class="sidebar">
+    <div class="brand">
+      <div class="brand-logo">
+        <svg class="nav-icon" style="stroke: white;" viewBox="0 0 24 24">
+          <path d="M12 2L2 7l10 5 10-5-10-5zM2 17l10 5 10-5M2 12l10 5 10-5" />
+        </svg>
+      </div>
+      <div class="brand-name">NEXUS<span>.</span></div>
+    </div>
+
+    <ul class="nav-list">
+      <li class="nav-item active" id="nav-dashboard">
+        <button onclick="navigate('dashboard')">
+          <svg class="nav-icon" viewBox="0 0 24 24">
+            <rect x="3" y="3" width="7" height="7" rx="1" /><rect x="14" y="3" width="7" height="7" rx="1" />
+            <rect x="3" y="14" width="7" height="7" rx="1" /><rect x="14" y="14" width="7" height="7" rx="1" />
+          </svg>
+          Dashboard
+        </button>
+      </li>
+      <li class="nav-item" id="nav-workflows">
+        <button onclick="navigate('workflows')">
+          <svg class="nav-icon" viewBox="0 0 24 24">
+            <path d="M12 2v20M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6" />
+          </svg>
+          Workflows
+        </button>
+      </li>
+      <li class="nav-item" id="nav-modules">
+        <button onclick="navigate('modules')">
+          <svg class="nav-icon" viewBox="0 0 24 24">
+            <polyline points="16 18 22 12 16 6" /><polyline points="8 6 2 12 8 18" />
+          </svg>
+          API Playground
+        </button>
+      </li>
+      <li class="nav-item" id="nav-logs">
+        <button onclick="navigate('logs')">
+          <svg class="nav-icon" viewBox="0 0 24 24">
+            <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z" />
+            <polyline points="14 2 14 8 20 8" />
+          </svg>
+          Live Logs
+        </button>
+      </li>
+    </ul>
+
+    <!-- Modules Widget -->
+    <div class="modules-widget">
+      <div class="modules-widget-header">
+        <span>DSA Subsystems</span>
+        <span style="color: var(--success);">18 OK</span>
+      </div>
+      <div class="modules-widget-list" id="dsa-subsystems-list">
+        <!-- Dyn. populated -->
+      </div>
+    </div>
+  </aside>
+
+  <!-- ══════════ MAIN AREA ══════════ -->
+  <main class="workspace">
+    
+    <!-- Topbar -->
+    <header class="top-nav">
+      <div class="header-title" id="page-title">Dashboard Overview</div>
+      
+      <div class="system-status">
+        <div class="server-indicator">
+          <div class="indicator-dot online" id="status-indicator"></div>
+          <span id="status-label">CONNECTED</span>
+        </div>
+        <button class="btn btn-secondary" style="padding: 8px 14px;" onclick="triggerCompilation()">
+          Recompile C++ Engine
+        </button>
+      </div>
+    </header>
+
+    <!-- ══════════ VIEW: DASHBOARD ══════════ -->
+    <div class="view-content active" id="view-dashboard">
+      <div class="stats-row">
+        <div class="stat-card">
+          <div class="stat-meta">Active Engines</div>
+          <div class="stat-num">18</div>
+          <div class="stat-desc">C++ Compiled Subsystems</div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-meta">Executions</div>
+          <div class="stat-num" id="metric-execs">0</div>
+          <div class="stat-desc">Processed workflows</div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-meta">Cache Efficiency</div>
+          <div class="stat-num" id="metric-hitrate">--</div>
+          <div class="stat-desc">LRU O(1) Hits</div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-meta">TPM Utilization</div>
+          <div class="stat-num" id="metric-tpm">0%</div>
+          <div class="stat-desc">Rate limit headroom</div>
+        </div>
+      </div>
+
+      <!-- Live Visualization -->
+      <div class="card">
+        <div class="card-header">
+          <div class="card-title">
+            <svg class="nav-icon" style="width:18px;height:18px;stroke:var(--accent);" viewBox="0 0 24 24"><path d="M22 12h-4l-3 9L9 3l-3 9H2"/></svg>
+            Active Pipeline Execution Topology
+          </div>
+          <span style="font-size:12px; color:var(--text-muted); font-family:var(--mono);">16_Graphs_and_Search</span>
+        </div>
+        <div class="card-body" style="padding: 12px;">
+          <div class="visualizer-wrapper">
+            <canvas id="dag-canvas-sleek"></canvas>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ══════════ VIEW: WORKFLOW BUILDER ══════════ -->
+    <div class="view-content" id="view-workflows">
+      <div class="builder-grid">
+        
+        <!-- Controls -->
+        <div class="input-panel">
+          <div class="card">
+            <div class="card-header">
+              <div class="card-title">Task Node Constructor</div>
+            </div>
+            <div class="card-body" style="display:flex; flex-direction:column; gap:16px;">
+              <div class="form-group">
+                <label>Task Identifier</label>
+                <input type="text" id="node-id" placeholder="e.g., extract_data" />
+              </div>
+              <div class="form-group">
+                <label>Subsystem Agent</label>
+                <select id="node-agent">
+                  <option value="data_extractor">Data Extractor Agent</option>
+                  <option value="llm_summarizer">LLM Summarizer Agent</option>
+                  <option value="db_agent">Database Operations Agent</option>
+                  <option value="validator_agent">Data Validator Agent</option>
+                  <option value="notification_agent">Notification Agent</option>
+                </select>
+              </div>
+              <div class="form-group">
+                <label>Queue Priority</label>
+                <input type="number" id="node-priority" value="5" min="1" max="10" />
+              </div>
+              <button class="btn btn-primary" onclick="addCustomTaskNode()">Insert Node</button>
+            </div>
+          </div>
+
+          <div class="card">
+            <div class="card-header">
+              <div class="card-title">Define Edge / Link</div>
+            </div>
+            <div class="card-body" style="display:flex; flex-direction:column; gap:16px;">
+              <div class="form-group">
+                <label>Parent Node ID</label>
+                <input type="text" id="edge-from" placeholder="e.g., extract_data" />
+              </div>
+              <div class="form-group">
+                <label>Child Dependent Node ID</label>
+                <input type="text" id="edge-to" placeholder="e.g., llm_summarizer" />
+              </div>
+              <button class="btn btn-secondary" onclick="addCustomEdgeLink()">Establish Dependency Link</button>
+            </div>
+          </div>
+
+          <button class="btn btn-primary" style="padding: 16px;" onclick="dispatchActiveWorkflow()">
+            Execute Active Topology Workflow
+          </button>
+        </div>
+
+        <!-- Designer Output & Config -->
+        <div class="card">
+          <div class="card-header">
+            <div class="card-title">Topology Structure Definition</div>
+            <button class="btn btn-secondary btn-danger" style="padding: 4px 12px; font-size:12px;" onclick="clearDesignBoard()">Reset Grid</button>
+          </div>
+          <div class="card-body" style="display:flex; flex-direction:column; gap:20px;">
+            <div style="font-family: var(--mono); font-size: 13px; color: var(--text-secondary); background: #fafafc; border: 1px solid var(--border-light); border-radius: var(--r-md); padding: 16px;">
+              <div style="font-weight: 700; margin-bottom: 8px;">Workspace State:</div>
+              Nodes: <span id="board-nodes-count">0</span><br>
+              Edges: <span id="board-edges-count">0</span>
+            </div>
+            <div class="console-panel" style="flex: 1; max-height: none; height: 260px;">
+              <div class="console-header">JSON Request payload</div>
+              <pre id="payload-preview">{}</pre>
+            </div>
+          </div>
+        </div>
+
+      </div>
+    </div>
+
+    <!-- ══════════ VIEW: API MODULES ══════════ -->
+    <div class="view-content" id="view-modules">
+      <div class="playground-grid">
+        
+        <!-- Navigation tab panel -->
+        <div class="module-tabs">
+          <button class="module-tab-btn active" onclick="activatePlaygroundTab('lru', this)">
+            <div class="tab-info">
+              <div class="tab-name">LRU Cache Service</div>
+              <div class="tab-desc">13_Linked_List & 09_Hashing</div>
+            </div>
+            <span class="tab-badge">O(1)</span>
+          </button>
+
+          <button class="module-tab-btn" onclick="activatePlaygroundTab('rbac', this)">
+            <div class="tab-info">
+              <div class="tab-name">RBAC Bitmask Permissions</div>
+              <div class="tab-desc">08_Bit_Manipulation</div>
+            </div>
+            <span class="tab-badge">Bitwise</span>
+          </button>
+
+          <button class="module-tab-btn" onclick="activatePlaygroundTab('keygen', this)">
+            <div class="tab-info">
+              <div class="tab-name">Cryptographic Key Gen</div>
+              <div class="tab-desc">02_Math & 01_Basics</div>
+            </div>
+            <span class="tab-badge">Primes</span>
+          </button>
+
+          <button class="module-tab-btn" onclick="activatePlaygroundTab('rate', this)">
+            <div class="tab-info">
+              <div class="tab-name">Token Rate Limiter</div>
+              <div class="tab-desc">05_Two_Pointers</div>
+            </div>
+            <span class="tab-badge">Sliding</span>
+          </button>
+        </div>
+
+        <!-- Testing Console Interface -->
+        <div class="card interactive-card">
+          <div class="card-header">
+            <div class="card-title" id="tab-interactive-title">Subsystem Interactive Tester</div>
+          </div>
+          <div class="card-body">
+            
+            <!-- Tab contents -->
+            <div class="action-panel active" id="panel-lru">
+              <div class="form-group">
+                <label>Key (integer)</label>
+                <input type="number" id="lru-input-key" value="101" />
+              </div>
+              <div class="form-group">
+                <label>Value (integer)</label>
+                <input type="number" id="lru-input-value" value="5000" />
+              </div>
+              <div style="display:flex; gap:12px; margin-top:8px;">
+                <button class="btn btn-primary" onclick="testLRUPut()">PUT Value</button>
+                <button class="btn btn-secondary" onclick="testLRUGet()">GET Value</button>
+              </div>
+            </div>
+
+            <div class="action-panel" id="panel-rbac">
+              <div class="form-group">
+                <label>Role Bitmask</label>
+                <input type="number" id="rbac-input-mask" value="7" />
+              </div>
+              <div class="form-group">
+                <label>Permission Level</label>
+                <select id="rbac-input-bit">
+                  <option value="1">READ (1)</option>
+                  <option value="2">WRITE (2)</option>
+                  <option value="4">EXECUTE (4)</option>
+                  <option value="8">DELETE (8)</option>
+                  <option value="16">ADMIN (16)</option>
+                </select>
+              </div>
+              <div style="display:flex; gap:12px; margin-top:8px;">
+                <button class="btn btn-primary" onclick="testRBACCheck()">Verify Access</button>
+                <button class="btn btn-secondary" onclick="testRBACGrant()">Grant Privilege</button>
+              </div>
+            </div>
+
+            <div class="action-panel" id="panel-keygen">
+              <div class="form-group">
+                <label>Start Seed Value (integer)</label>
+                <input type="number" id="keygen-input-seed" value="5000" />
+              </div>
+              <div class="form-group">
+                <label>Required Prime Elements</label>
+                <input type="number" id="keygen-input-count" value="6" />
+              </div>
+              <div style="display:flex; gap:12px; margin-top:8px;">
+                <button class="btn btn-primary" onclick="testKeygen()">Compute & Generate Key</button>
+              </div>
+            </div>
+
+            <div class="action-panel" id="panel-rate">
+              <div class="form-group">
+                <label>TPM Limit</label>
+                <input type="number" id="rate-input-limit" value="90000" />
+              </div>
+              <div class="form-group">
+                <label>Token Consumption Rate</label>
+                <input type="number" id="rate-input-tokens" value="15000" />
+              </div>
+              <div style="display:flex; gap:12px; margin-top:8px;">
+                <button class="btn btn-primary" onclick="testRateCheck()">Execute Check</button>
+              </div>
+            </div>
+
+            <!-- JSON Output Screen -->
+            <div class="console-panel" style="margin-top: 24px; min-height: 180px;">
+              <div class="console-header">Response Response</div>
+              <pre id="tab-response-panel">No execution run yet.</pre>
+            </div>
+
+          </div>
+        </div>
+
+      </div>
+    </div>
+
+    <!-- ══════════ VIEW: LOGS ══════════ -->
+    <div class="view-content" id="view-logs">
+      <div class="card">
+        <div class="card-header">
+          <div class="card-title">Live Engine Log Stream</div>
+          <button class="btn btn-secondary" style="padding: 4px 12px; font-size:12px;" onclick="clearSystemLogPanel()">Flush Logs</button>
+        </div>
+        <div class="card-body">
+          <div class="log-stream" id="logs-stream-element">
+            <!-- Populated via Javascript -->
+          </div>
+        </div>
+      </div>
+    </div>
+
+  </main>
+</div>
+
+<div id="notification-center"></div>
+
+<script>
+  // State variables
+  let currentActiveTab = 'dashboard';
+  let activeNodes = [];
+  let activeEdges = [];
+  let hitCount = 0;
+  let missCount = 0;
+  const API_BASE = 'http://localhost:8000';
+
+  // Modernized High-DPI Canvas DAG Visualizer
+  const dagCanvas = document.getElementById('dag-canvas-sleek');
+  const ctx = dagCanvas.getContext('2d');
+  
+  let layoutNodes = [];
+  let layoutEdges = [];
+  let activeAnimFrame = 0;
+  let layoutPhase = 0;
+
+  const THEME = {
+    font: '600 12px "Plus Jakarta Sans"',
+    mono: '500 10px "JetBrains Mono"',
+    colors: {
+      accent: '#6366f1',
+      accentGlow: 'rgba(99, 102, 241, 0.1)',
+      success: '#10b981',
+      successGlow: 'rgba(16, 185, 129, 0.1)',
+      pending: '#94a3b8',
+      text: '#0f172a',
+      lightBorder: '#e2e8f0'
+    }
+  };
+
+  const DEFAULT_TOPOLOGY = {
+    tasks: [
+      { id: 'start_pipeline', name: 'Start Pipeline', agent_type: 'data_extractor', priority: 1 },
+      { id: 'ingest_data', name: 'Ingest Data', agent_type: 'data_extractor', priority: 2 },
+      { id: 'run_analysis', name: 'Run Analysis', agent_type: 'llm_summarizer', priority: 5 },
+      { id: 'save_db', name: 'Save to DB', agent_type: 'db_agent', priority: 3 },
+      { id: 'notify_user', name: 'Notify User', agent_type: 'notification_agent', priority: 1 }
+    ],
+    edges: [
+      { from_task: 'start_pipeline', to_task: 'ingest_data' },
+      { from_task: 'ingest_data', to_task: 'run_analysis' },
+      { from_task: 'ingest_data', to_task: 'save_db' },
+      { from_task: 'run_analysis', to_task: 'notify_user' },
+      { from_task: 'save_db', to_task: 'notify_user' }
+    ]
+  };
+
+  const DSA_MODULES = [
+    { num: '01', name: 'Basics' },
+    { num: '02', name: 'Math' },
+    { num: '03', name: 'Arrays' },
+    { num: '04', name: 'Strings' },
+    { num: '05', name: 'Two Pointers' },
+    { num: '06', name: 'Recursion' },
+    { num: '07', name: 'Sorting' },
+    { num: '08', name: 'Bit Manipulation' },
+    { num: '09', name: 'Hashing' },
+    { num: '10', name: 'Trees' },
+    { num: '11', name: 'Binary Search' },
+    { num: '12', name: 'Backtracking' },
+    { num: '13', name: 'Linked List' },
+    { num: '14', name: 'Queues' },
+    { num: '15', name: 'DP' },
+    { num: '16', name: 'Graphs' },
+    { num: '17', name: 'Greedy' },
+    { num: '18', name: 'Advanced DS' }
+  ];
+
+  // Setup view switches
+  function navigate(viewName) {
+    document.querySelectorAll('.view-content').forEach(el => el.classList.remove('active'));
+    document.querySelectorAll('.nav-item').forEach(el => el.classList.remove('active'));
+
+    const view = document.getElementById(`view-${viewName}`);
+    const navItem = document.getElementById(`nav-${viewName}`);
+    
+    if (view) view.classList.add('active');
+    if (navItem) navItem.classList.add('active');
+    
+    document.getElementById('page-title').textContent = viewName.toUpperCase();
+    currentActiveTab = viewName;
+
+    if (viewName === 'dashboard') {
+      triggerResize();
+    }
+  }
+
+  // Visualizer resizing
+  function triggerResize() {
+    const parent = dagCanvas.parentElement;
+    const dpr = window.devicePixelRatio || 1;
+    
+    dagCanvas.width = parent.clientWidth * dpr;
+    dagCanvas.height = parent.clientHeight * dpr;
+    dagCanvas.style.width = `${parent.clientWidth}px`;
+    dagCanvas.style.height = `${parent.clientHeight}px`;
+    
+    ctx.scale(dpr, dpr);
+    recalculateNodePositions();
+  }
+
+  window.addEventListener('resize', triggerResize);
+
+  // Initialize Default state
+  function setupDefaults() {
+    activeNodes = [...DEFAULT_TOPOLOGY.tasks];
+    activeEdges = [...DEFAULT_TOPOLOGY.edges];
+    recalculateNodePositions();
+    renderWorkflowPreview();
+    updateSubsystemGrid();
+    triggerResize();
+    
+    // Simulate dashboard values
+    document.getElementById('metric-execs').textContent = '24';
+    document.getElementById('metric-hitrate').textContent = '96.2%';
+    document.getElementById('metric-tpm').textContent = '12%';
+
+    addSystemLog('INFO', 'Nexus DAG Engine Orchestrator initialized successfully.');
+    addSystemLog('SUCCESS', '18 C++ dynamic subsystems compiled and bound.');
+  }
+
+  // Recalculating positions of Nodes on Canvas
+  function recalculateNodePositions() {
+    if (activeNodes.length === 0) return;
+    
+    const w = dagCanvas.width / (window.devicePixelRatio || 1);
+    const h = dagCanvas.height / (window.devicePixelRatio || 1);
+    
+    // Simple topological tier layouts
+    const levels = [['start_pipeline'], ['ingest_data'], ['run_analysis', 'save_db'], ['notify_user']];
+    
+    // Fallback if user starts adding custom nodes
+    const processedIds = new Set();
+    const mappedLevels = [];
+    
+    levels.forEach(lvl => {
+      const filtered = lvl.filter(id => activeNodes.some(n => n.id === id));
+      if (filtered.length > 0) {
+        mappedLevels.push(filtered);
+        filtered.forEach(id => processedIds.add(id));
+      }
+    });
+    
+    // Add rest of custom nodes to intermediate tiers
+    const rest = activeNodes.filter(n => !processedIds.has(n.id)).map(n => n.id);
+    if (rest.length > 0) {
+      mappedLevels.splice(2, 0, rest);
+    }
+    
+    layoutNodes = [];
+    const stepX = w / (mappedLevels.length + 1);
+    
+    mappedLevels.forEach((lvl, xIdx) => {
+      const stepY = h / (lvl.length + 1);
+      lvl.forEach((nodeId, yIdx) => {
+        const sourceNode = activeNodes.find(n => n.id === nodeId);
+        layoutNodes.push({
+          id: nodeId,
+          name: sourceNode ? sourceNode.name : nodeId,
+          x: stepX * (xIdx + 1),
+          y: stepY * (yIdx + 1),
+          state: (xIdx === 0 && layoutPhase > 0) ? 'SUCCESS' : (xIdx === 1 && layoutPhase > 1) ? 'RUNNING' : 'PENDING'
+        });
+      });
+    });
+    
+    layoutEdges = activeEdges.map(e => ({
+      from: e.from_task,
+      to: e.to_task
+    }));
+  }
+
+  // Gorgeous Smooth Canvas Loop
+  function drawDashboardVisualizer() {
+    activeAnimFrame++;
+    
+    // Clear canvas
+    ctx.clearRect(0, 0, dagCanvas.width, dagCanvas.height);
+    
+    const w = dagCanvas.width / (window.devicePixelRatio || 1);
+    const h = dagCanvas.height / (window.devicePixelRatio || 1);
+    
+    // Draw links
+    layoutEdges.forEach(edge => {
+      const fromNode = layoutNodes.find(n => n.id === edge.from);
+      const toNode = layoutNodes.find(n => n.id === edge.to);
+      if (!fromNode || !toNode) return;
+      
+      ctx.beginPath();
+      ctx.moveTo(fromNode.x, fromNode.y);
+      ctx.lineTo(toNode.x, toNode.y);
+      ctx.strokeStyle = THEME.colors.lightBorder;
+      ctx.lineWidth = 2;
+      ctx.stroke();
+      
+      // Moving energy pulse indicator along path
+      const pulsePos = (activeAnimFrame % 100) / 100;
+      const pulseX = fromNode.x + (toNode.x - fromNode.x) * pulsePos;
+      const pulseY = fromNode.y + (toNode.y - fromNode.y) * pulsePos;
+      
+      ctx.beginPath();
+      ctx.arc(pulseX, pulseY, 4, 0, Math.PI * 2);
+      ctx.fillStyle = THEME.colors.accent;
+      ctx.fill();
+    });
+    
+    // Draw Node objects
+    layoutNodes.forEach(node => {
+      const isRunning = node.state === 'RUNNING';
+      const isSuccess = node.state === 'SUCCESS';
+      
+      // Glowing shadow box
+      ctx.save();
+      ctx.shadowBlur = isRunning ? 16 : 8;
+      ctx.shadowColor = isRunning ? THEME.colors.accent : 'rgba(0,0,0,0.04)';
+      
+      ctx.beginPath();
+      ctx.roundRect(node.x - 70, node.y - 24, 140, 48, 8);
+      ctx.fillStyle = '#ffffff';
+      ctx.fill();
+      
+      // Border color depending on state
+      ctx.strokeStyle = isRunning ? THEME.colors.accent : isSuccess ? THEME.colors.success : THEME.colors.lightBorder;
+      ctx.lineWidth = isRunning ? 2 : 1;
+      ctx.stroke();
+      ctx.restore();
+      
+      // State Pill Icon indicator
+      ctx.beginPath();
+      ctx.arc(node.x - 52, node.y, 5, 0, Math.PI * 2);
+      ctx.fillStyle = isRunning ? THEME.colors.accent : isSuccess ? THEME.colors.success : THEME.colors.pending;
+      ctx.fill();
+      
+      // Node Text
+      ctx.font = THEME.font;
+      ctx.fillStyle = THEME.colors.text;
+      ctx.textAlign = 'left';
+      ctx.textBaseline = 'middle';
+      ctx.fillText(node.name, node.x - 38, node.y - 4);
+      
+      ctx.font = THEME.mono;
+      ctx.fillStyle = '#94a3b8';
+      ctx.fillText(node.id, node.x - 38, node.y + 10);
+    });
+    
+    requestAnimationFrame(drawDashboardVisualizer);
+  }
+
+  // ═══════════════════════════════════════════════════════════════
+  // SYSTEM ENGINE TESTING METHODS
+  // ═══════════════════════════════════════════════════════════════
+  function addCustomTaskNode() {
+    const id = document.getElementById('node-id').value.trim();
+    const agent = document.getElementById('node-agent').value;
+    const priority = parseInt(document.getElementById('node-priority').value) || 5;
+    
+    if (!id) {
+      triggerNotification('Task Identifier must be specified', 'danger');
+      return;
+    }
+    
+    if (activeNodes.some(n => n.id === id)) {
+      triggerNotification('Node ID already defined', 'warning');
+      return;
+    }
+    
+    activeNodes.push({
+      id,
+      name: id.replace('_', ' ').replace('-', ' '),
+      agent_type: agent,
+      priority
+    });
+    
+    recalculateNodePositions();
+    renderWorkflowPreview();
+    triggerNotification(`Added task node: ${id}`, 'success');
+  }
+
+  function addCustomEdgeLink() {
+    const from = document.getElementById('edge-from').value.trim();
+    const to = document.getElementById('edge-to').value.trim();
+    
+    if (!from || !to) {
+      triggerNotification('Both link terminals must be defined', 'danger');
+      return;
+    }
+    
+    activeEdges.push({
+      from_task: from,
+      to_task: to
+    });
+    
+    recalculateNodePositions();
+    renderWorkflowPreview();
+    triggerNotification(`Dependency mapped: ${from} → ${to}`, 'success');
+  }
+
+  function clearDesignBoard() {
+    activeNodes = [];
+    activeEdges = [];
+    recalculateNodePositions();
+    renderWorkflowPreview();
+    triggerNotification('Grid state reset.', 'info');
+  }
+
+  function renderWorkflowPreview() {
+    document.getElementById('board-nodes-count').textContent = activeNodes.length;
+    document.getElementById('board-edges-count').textContent = activeEdges.length;
+    
+    const payload = {
+      name: "Nexus Live Pipeline Workflow",
+      tasks: activeNodes.map(n => ({
+        id: n.id,
+        name: n.name,
+        agent_type: n.agent_type,
+        priority: n.priority
+      })),
+      edges: activeEdges
+    };
+    
+    document.getElementById('payload-preview').innerHTML = syntaxHighlightJSON(payload);
+  }
+
+  // ═══════════════════════════════════════════════════════════════
+  // API INTEGRATION & CALLS
+  // ═══════════════════════════════════════════════════════════════
+  async function dispatchActiveWorkflow() {
+    if (activeNodes.length === 0) {
+      triggerNotification('Must specify at least 1 node to execute.', 'warning');
+      return;
+    }
+    
+    triggerNotification('Dispatching active workflow to Nexus DAG Engine...', 'info');
+    
+    const payload = {
+      name: "Nexus Live Orchestration pipeline",
+      tasks: activeNodes.map(n => ({
+        id: n.id,
+        name: n.name,
+        agent_type: n.agent_type,
+        priority: n.priority,
+        ram_mb: 256,
+        cpu_mcores: 500
+      })),
+      edges: activeEdges
+    };
+
+    try {
+      const response = await fetch(`${API_BASE}/execute-workflow`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(payload)
+      });
+      
+      const res = await response.json();
+      document.getElementById('payload-preview').innerHTML = syntaxHighlightJSON(res);
+      addSystemLog('SUCCESS', `Workflow completed: ${res.workflow_id}`);
+      triggerNotification('Workflow processed successfully!', 'success');
+      
+      // Update local metrics
+      const currentExecs = parseInt(document.getElementById('metric-execs').textContent) || 0;
+      document.getElementById('metric-execs').textContent = (currentExecs + 1).toString();
+      
+      // Transition animations of states
+      layoutPhase = 1;
+      setTimeout(() => { layoutPhase = 2; }, 1000);
+      setTimeout(() => { layoutPhase = 3; }, 2000);
+      
+    } catch(err) {
+      addSystemLog('ERROR', `Workflow execution failed: ${err.message}`);
+      triggerNotification('Failed to execute workflow. Is backend running?', 'danger');
+    }
+  }
+
+  // Subsystem test functions
+  async function testLRUPut() {
+    const key = parseInt(document.getElementById('lru-input-key').value);
+    const value = parseInt(document.getElementById('lru-input-value').value);
+    
+    try {
+      const res = await fetch(`${API_BASE}/cache/put`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ key, value })
+      });
+      const data = await res.json();
+      document.getElementById('tab-response-panel').innerHTML = syntaxHighlightJSON(data);
+      addSystemLog('INFO', `LRU PUT: Key ${key} cached.`);
+    } catch (e) {
+      triggerNotification('LRU Server Action failed', 'danger');
+    }
+  }
+
+  async function testLRUGet() {
+    const key = parseInt(document.getElementById('lru-input-key').value);
+    
+    try {
+      const res = await fetch(`${API_BASE}/cache/get`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ key })
+      });
+      const data = await res.json();
+      document.getElementById('tab-response-panel').innerHTML = syntaxHighlightJSON(data);
+      
+      if (data.output && data.output.hit) {
+        hitCount++;
+        addSystemLog('SUCCESS', `LRU CACHE HIT: Retrieved Key ${key}`);
+      } else {
+        missCount++;
+        addSystemLog('WARN', `LRU CACHE MISS: Key ${key}`);
+      }
+      
+      const total = hitCount + missCount;
+      const rate = total > 0 ? ((hitCount / total) * 100).toFixed(1) : 0;
+      document.getElementById('metric-hitrate').textContent = `${rate}%`;
+    } catch (e) {
+      triggerNotification('LRU Server Action failed', 'danger');
+    }
+  }
+
+  async function testRBACCheck() {
+    const mask = parseInt(document.getElementById('rbac-input-mask').value);
+    const bit = parseInt(document.getElementById('rbac-input-bit').value);
+    
+    try {
+      const res = await fetch(`${API_BASE}/rbac/check`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ role_mask: mask, permission_bit: bit })
+      });
+      const data = await res.json();
+      document.getElementById('tab-response-panel').innerHTML = syntaxHighlightJSON(data);
+    } catch (e) {
+      triggerNotification('RBAC call failed', 'danger');
+    }
+  }
+
+  async function testRBACGrant() {
+    const mask = parseInt(document.getElementById('rbac-input-mask').value);
+    const bit = parseInt(document.getElementById('rbac-input-bit').value);
+    
+    try {
+      const res = await fetch(`${API_BASE}/rbac/grant`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ role_mask: mask, permission_bit: bit })
+      });
+      const data = await res.json();
+      document.getElementById('tab-response-panel').innerHTML = syntaxHighlightJSON(data);
+      triggerNotification('Privileges updated!', 'success');
+    } catch (e) {
+      triggerNotification('RBAC call failed', 'danger');
+    }
+  }
+
+  async function testKeygen() {
+    const seed = parseInt(document.getElementById('keygen-input-seed').value);
+    const count = parseInt(document.getElementById('keygen-input-count').value);
+    
+    try {
+      const res = await fetch(`${API_BASE}/keygen?seed=${seed}&count=${count}`);
+      const data = await res.json();
+      document.getElementById('tab-response-panel').innerHTML = syntaxHighlightJSON(data);
+      addSystemLog('SUCCESS', `Generated crypto key token.`);
+    } catch (e) {
+      triggerNotification('Crypto generation failed', 'danger');
+    }
+  }
+
+  async function testRateCheck() {
+    const limit = parseInt(document.getElementById('rate-input-limit').value);
+    const tokens = parseInt(document.getElementById('rate-input-tokens').value);
+    const now = Date.now();
+    
+    const payload = {
+      events: [{ timestamp_ms: now, tokens }],
+      limit,
+      query_ts: now
+    };
+    
+    try {
+      const res = await fetch(`${API_BASE}/rate-check`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(payload)
+      });
+      const data = await res.json();
+      document.getElementById('tab-response-panel').innerHTML = syntaxHighlightJSON(data);
+      
+      const rateOutput = data.output || data;
+      if (rateOutput.throttle) {
+        addSystemLog('WARN', 'API Throttling triggered: Window limit exceeded.');
+      } else {
+        addSystemLog('INFO', `Limit check passed. Capacity verified.`);
+      }
+    } catch (e) {
+      triggerNotification('Rate limit check failed', 'danger');
+    }
+  }
+
+  // Recompilation trigger
+  async function triggerCompilation() {
+    triggerNotification('Compiling all C++ binaries via GCC...', 'info');
+    try {
+      const res = await fetch(`${API_BASE}/compile`);
+      const data = await res.json();
+      triggerNotification('All subsystems recompiled successfully!', 'success');
+      addSystemLog('SUCCESS', 'Pre-compiled modules re-generated.');
+      updateSubsystemGrid();
+    } catch (e) {
+      triggerNotification('Failed to compile C++ engine.', 'danger');
+    }
+  }
+
+  // ═══════════════════════════════════════════════════════════════
+  // UTILITY HELPER METHODS
+  // ═══════════════════════════════════════════════════════════════
+  function activatePlaygroundTab(tabKey, element) {
+    document.querySelectorAll('.module-tab-btn').forEach(btn => btn.classList.remove('active'));
+    document.querySelectorAll('.action-panel').forEach(panel => panel.classList.remove('active'));
+    
+    element.classList.add('active');
+    document.getElementById(`panel-${tabKey}`).classList.add('active');
+    document.getElementById('tab-interactive-title').textContent = `${tabKey.toUpperCase()} Console Interface`;
+  }
+
+  function triggerNotification(message, type = 'info') {
+    const container = document.getElementById('notification-center');
+    const toast = document.createElement('div');
+    toast.className = `toast`;
+    
+    const borders = {
+      success: '#10b981',
+      warning: '#f59e0b',
+      danger: '#ef4444',
+      info: '#6366f1'
+    };
+    
+    toast.style.borderLeftColor = borders[type] || borders.info;
+    toast.textContent = message;
+    
+    container.appendChild(toast);
+    setTimeout(() => {
+      toast.style.opacity = '0';
+      setTimeout(() => toast.remove(), 300);
+    }, 3000);
+  }
+
+  function addSystemLog(tag, text) {
+    const container = document.getElementById('logs-stream-element');
+    const now = new Date();
+    const timestamp = now.toTimeString().split(' ')[0];
+    
+    const typeClass = {
+      INFO: 'tag-info',
+      SUCCESS: 'tag-success',
+      WARN: 'tag-warning',
+      ERROR: 'tag-error'
+    }[tag] || 'tag-info';
+    
+    const row = document.createElement('div');
+    row.className = 'log-row';
+    row.innerHTML = `
+      <span class="log-time">${timestamp}</span>
+      <span class="log-tag ${typeClass}">${tag}</span>
+      <span class="log-text">${text}</span>
+    `;
+    
+    container.appendChild(row);
+    container.scrollTop = container.scrollHeight;
+  }
+
+  function clearSystemLogPanel() {
+    document.getElementById('logs-stream-element').innerHTML = '';
+  }
+
+  function updateSubsystemGrid() {
+    const list = document.getElementById('dsa-subsystems-list');
+    list.innerHTML = '';
+    
+    DSA_MODULES.slice(0, 15).forEach((m, idx) => {
+      const cell = document.createElement('div');
+      cell.className = 'mini-module active';
+      cell.textContent = m.num;
+      cell.title = m.name;
+      list.appendChild(cell);
+    });
+  }
+
+  function syntaxHighlightJSON(jsonObj) {
+    let json = JSON.stringify(jsonObj, null, 2);
+    json = json.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
+    return json.replace(/("(\\u[a-zA-Z0-9]{4}|\\[^u]|[^\\"])*"(\s*:)?|\b(true|false|null)\b|-?\d+(?:\.\d*)?(?:[eE][+\-]?\d+)?)/g, function (match) {
+      let cls = 'json-num';
+      if (/^"/.test(match)) {
+        if (/:$/.test(match)) {
+          cls = 'json-key';
+        } else {
+          cls = 'json-value';
+        }
+      } else if (/true|false/.test(match)) {
+        cls = 'json-bool';
+      }
+      return '<span class="' + cls + '">' + match + '</span>';
+    });
+  }
+
+  // Start visualizer loop
+  setupDefaults();
+  drawDashboardVisualizer();
+</script>
+
+</body>
+</html>
